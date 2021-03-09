@@ -91,8 +91,8 @@ func RouteHandler() *mux.Router {
 
 	r.StrictSlash(true)
 
-	// install recover handler
-	r.Use(RecoverHandler)
+	// install access log and recover handler
+	r.Use(AccessLog, RecoverHandler)
 
 	// not found handler
 	r.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
