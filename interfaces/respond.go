@@ -42,7 +42,7 @@ func Respond(w http.ResponseWriter, code int, src interface{}) {
 	case *ErrorResponse, ErrorResponse:
 		// avoid infinite loop
 		if body, err = json.Marshal(src); err != nil {
-			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("{\"reason\":\"failed to parse json\"}"))
 			return
@@ -94,6 +94,7 @@ func JSON(w http.ResponseWriter, code int, data interface{}, msg ...string) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(body)
 }
