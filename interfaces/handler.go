@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"syscall"
@@ -18,6 +19,7 @@ import (
 	"github.com/daheige/go-ddd-api/config"
 	"github.com/daheige/go-ddd-api/domain"
 	"github.com/daheige/go-ddd-api/infrastructure/utils"
+	"github.com/daheige/thinkgo/gutils"
 	"github.com/gorilla/mux"
 )
 
@@ -89,7 +91,10 @@ func RouteHandler() *mux.Router {
 
 	r.StrictSlash(true)
 
-	// api not found handler
+	// install recover handler
+	r.Use(RecoverHandler)
+
+	// not found handler
 	r.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
 
 	// Index Route
@@ -155,6 +160,55 @@ func RouteHandler() *mux.Router {
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("this page not found"))
+}
+
+// RecoverHandler recover handler
+func RecoverHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Println("exec panic error", map[string]interface{}{
+					"trace_error": string(debug.Stack()),
+				})
+
+				// server error
+				http.Error(w, "server error!", http.StatusInternalServerError)
+				return
+			}
+		}()
+
+		h.ServeHTTP(w, r)
+	})
+}
+
+func AccessLog(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t := time.Now()
+
+		log.Println("exec begin", nil)
+		log.Println("request before")
+		log.Println("request uri: ", r.RequestURI)
+
+		// x-request-id
+		reqId := r.Header.Get("x-request-id")
+		if reqId == "" {
+			reqId = gutils.Uuid()
+		}
+
+		// log.Println("log_id: ", reqId)
+		r = utils.ContextSet(r, "log_id", reqId)
+		r = utils.ContextSet(r, "client_ip", r.RemoteAddr)
+		r = utils.ContextSet(r, "request_method", r.Method)
+		r = utils.ContextSet(r, "request_uri", r.RequestURI)
+		r = utils.ContextSet(r, "user_agent", r.Header.Get("User-Agent"))
+
+		h.ServeHTTP(w, r)
+
+		log.Println("exec end", map[string]interface{}{
+			"exec_time": time.Now().Sub(t).Seconds(),
+		})
+
+	})
 }
 
 func index(w http.ResponseWriter, _ *http.Request) {
