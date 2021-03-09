@@ -230,7 +230,7 @@ curl --request PUT \
 ## References & Library
 
 - DDD Skeleton : https://github.com/takashabe/go-ddd-sample
-- Httprouter : https://github.com/julienschmidt/httprouter
+- Gorilla/mux : https://github.com/gorilla/mux v1.8.0
 - GORM Documentation : http://doc.gorm.io
 - GORM Pagination Extension : https://github.com/biezhi/gorm-paginator
 - Toml : https://github.com/BurntSushi/toml

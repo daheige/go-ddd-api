@@ -8,13 +8,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// AppConfig app config
 type AppConfig struct {
 	DB *gorm.DB
 }
 
+// AppConf app config instance
 var AppConf = AppConfig{}
 
-// ConfigDB db seting
+// ConfigDB db config
 type ConfigDB struct {
 	User     string
 	Password string
