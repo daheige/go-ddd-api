@@ -19,7 +19,7 @@ import (
 	"github.com/daheige/go-ddd-api/config"
 	"github.com/daheige/go-ddd-api/domain"
 	"github.com/daheige/go-ddd-api/infrastructure/utils"
-	"github.com/daheige/thinkgo/gutils"
+	"github.com/daheige/tigago/gutils"
 	"github.com/gorilla/mux"
 )
 
