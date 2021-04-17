@@ -17,7 +17,7 @@ import (
 
 	"github.com/daheige/go-ddd-api/application"
 	"github.com/daheige/go-ddd-api/config"
-	"github.com/daheige/go-ddd-api/domain"
+	"github.com/daheige/go-ddd-api/domain/model"
 	"github.com/daheige/go-ddd-api/infrastructure/utils"
 	"github.com/daheige/tigago/gutils"
 	"github.com/gorilla/mux"
@@ -28,33 +28,33 @@ var IsLetter = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
 
 var graceWait = 5 * time.Second
 
-// Run start server
+// Run start services
 func Run(port int) {
 	log.Printf("Server running on port:%d/", port)
 
 	// register mux router
 	router := RouteHandler()
 
-	// create http server
+	// create http services
 	server := &http.Server{
-		// Handler: http.TimeoutHandler(router, time.Second*6, `{code:503,"message":"server timeout"}`),
+		// Handler: http.TimeoutHandler(router, time.Second*6, `{code:503,"message":"services timeout"}`),
 		Handler:      router,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	// run http server in goroutine
+	// run http services in goroutine
 	go func() {
 		defer utils.Recover()
 
 		if err := server.ListenAndServe(); err != nil {
 			if err != http.ErrServerClosed {
-				log.Println("server listen error:", err)
+				log.Println("services listen error:", err)
 				return
 			}
 
-			log.Println("server will exit...")
+			log.Println("services will exit...")
 		}
 	}()
 
@@ -82,7 +82,7 @@ func Run(port int) {
 	go server.Shutdown(ctx)
 	<-ctx.Done()
 
-	log.Println("server shutdown success")
+	log.Println("services shutdown success")
 }
 
 // RouteHandler returns the initialized router
@@ -171,8 +171,8 @@ func RecoverHandler(h http.Handler) http.Handler {
 					"trace_error": string(debug.Stack()),
 				})
 
-				// server error
-				http.Error(w, "server error!", http.StatusInternalServerError)
+				// services error
+				http.Error(w, "services error!", http.StatusInternalServerError)
 				return
 			}
 		}()
@@ -294,7 +294,7 @@ func getAllNews(w http.ResponseWriter, r *http.Request) {
 
 func createNews(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var p domain.News
+	var p model.News
 	if err := decoder.Decode(&p); err != nil {
 		Error(w, http.StatusNotFound, err, err.Error())
 	}
@@ -326,7 +326,7 @@ func removeNews(w http.ResponseWriter, r *http.Request) {
 
 func updateNews(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var p domain.News
+	var p model.News
 	err := decoder.Decode(&p)
 	if err != nil {
 		Error(w, http.StatusNotFound, err, err.Error())
@@ -417,7 +417,7 @@ func removeTopic(w http.ResponseWriter, r *http.Request) {
 
 func updateTopic(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var p domain.Topic
+	var p model.Topic
 	err := decoder.Decode(&p)
 	if err != nil {
 		Error(w, http.StatusNotFound, err, err.Error())

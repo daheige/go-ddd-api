@@ -1,10 +1,11 @@
 package persistence
 
 import (
-	"github.com/daheige/go-ddd-api/domain"
-	"github.com/daheige/go-ddd-api/domain/repository"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+
+	"github.com/daheige/go-ddd-api/domain/model"
+	"github.com/daheige/go-ddd-api/domain/repository"
 )
 
 // NewsRepositoryImpl Implements repository.NewsRepository
@@ -18,8 +19,8 @@ func NewNewsRepositoryWithRDB(conn *gorm.DB) repository.NewsRepository {
 }
 
 // Get news by id return domain.news
-func (r *NewsRepositoryImpl) Get(id int) (*domain.News, error) {
-	news := &domain.News{}
+func (r *NewsRepositoryImpl) Get(id int) (*model.News, error) {
+	news := &model.News{}
 	if err := r.Conn.Preload("Topic").First(&news, id).Error; err != nil {
 		return nil, err
 	}
@@ -27,8 +28,8 @@ func (r *NewsRepositoryImpl) Get(id int) (*domain.News, error) {
 }
 
 // GetAll News return all domain.news
-func (r *NewsRepositoryImpl) GetAll() ([]domain.News, error) {
-	news := []domain.News{}
+func (r *NewsRepositoryImpl) GetAll() ([]model.News, error) {
+	news := []model.News{}
 	if err := r.Conn.Preload("Topic").Find(&news).Error; err != nil {
 		return nil, err
 	}
@@ -37,7 +38,7 @@ func (r *NewsRepositoryImpl) GetAll() ([]domain.News, error) {
 }
 
 // Save to add news
-func (r *NewsRepositoryImpl) Save(news *domain.News) error {
+func (r *NewsRepositoryImpl) Save(news *model.News) error {
 	if err := r.Conn.Save(&news).Error; err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (r *NewsRepositoryImpl) Remove(id int) error {
 		return err
 	}
 
-	news := domain.News{}
+	news := model.News{}
 	if err := tx.First(&news, id).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -79,8 +80,8 @@ func (r *NewsRepositoryImpl) Remove(id int) error {
 }
 
 // Update is update news
-func (r *NewsRepositoryImpl) Update(news *domain.News) error {
-	if err := r.Conn.Model(&news).UpdateColumns(domain.News{Title: news.Title, Slug: news.Slug, Content: news.Content, Status: news.Status, Topic: news.Topic}).Error; err != nil {
+func (r *NewsRepositoryImpl) Update(news *model.News) error {
+	if err := r.Conn.Model(&news).UpdateColumns(model.News{Title: news.Title, Slug: news.Slug, Content: news.Content, Status: news.Status, Topic: news.Topic}).Error; err != nil {
 		return err
 	}
 
@@ -88,9 +89,9 @@ func (r *NewsRepositoryImpl) Update(news *domain.News) error {
 }
 
 // GetAll News return all domain.news
-func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]domain.News, error) {
+func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]model.News, error) {
 	if status == "deleted" {
-		news := []domain.News{}
+		news := []model.News{}
 		if err := r.Conn.Unscoped().Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
 			return nil, err
 		}
@@ -98,7 +99,7 @@ func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]domain.News, error
 		return news, nil
 	}
 
-	news := []domain.News{}
+	news := []model.News{}
 	if err := r.Conn.Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
 		return nil, err
 	}
@@ -107,14 +108,14 @@ func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]domain.News, error
 }
 
 // GetBySlug News return all []domain.news by topic.slug
-func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]*domain.News, error) {
+func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]*model.News, error) {
 	rows, err := r.Conn.Raw("SELECT news.id, news.title, news.slug, news.content, news.status FROM `news_topics` LEFT JOIN news ON news_topics.news_id=news.id WHERE news_topics.topic_id=(SELECT id as topic_id FROM `topics` WHERE slug = ?)", slug).Rows() // (*sql.Rows, error)
 	defer rows.Close()
 
-	us := make([]*domain.News, 0)
+	us := make([]*model.News, 0)
 
 	for rows.Next() {
-		u := &domain.News{}
+		u := &model.News{}
 		err = rows.Scan(&u.ID, &u.Title, &u.Slug, &u.Content, &u.Status)
 
 		if err != nil {

@@ -1,10 +1,11 @@
 package persistence
 
 import (
-	"github.com/daheige/go-ddd-api/domain"
-	"github.com/daheige/go-ddd-api/domain/repository"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+
+	"github.com/daheige/go-ddd-api/domain/model"
+	"github.com/daheige/go-ddd-api/domain/repository"
 )
 
 // TopicRepositoryImpl Implements repository.TopicRepository
@@ -18,8 +19,8 @@ func NewTopicRepositoryWithRDB(conn *gorm.DB) repository.TopicRepository {
 }
 
 // Get topic by id return domain.topic
-func (r *TopicRepositoryImpl) Get(id int) (*domain.Topic, error) {
-	topic := &domain.Topic{}
+func (r *TopicRepositoryImpl) Get(id int) (*model.Topic, error) {
+	topic := &model.Topic{}
 	if err := r.Conn.Preload("News").First(&topic, id).Error; err != nil {
 		return nil, err
 	}
@@ -27,8 +28,8 @@ func (r *TopicRepositoryImpl) Get(id int) (*domain.Topic, error) {
 }
 
 // GetAll topic return all domain.topic
-func (r *TopicRepositoryImpl) GetAll() ([]domain.Topic, error) {
-	topics := []domain.Topic{}
+func (r *TopicRepositoryImpl) GetAll() ([]model.Topic, error) {
+	topics := []model.Topic{}
 	if err := r.Conn.Preload("News").Find(&topics).Error; err != nil {
 		return nil, err
 	}
@@ -37,7 +38,7 @@ func (r *TopicRepositoryImpl) GetAll() ([]domain.Topic, error) {
 }
 
 // Save to add topic
-func (r *TopicRepositoryImpl) Save(topic *domain.Topic) error {
+func (r *TopicRepositoryImpl) Save(topic *model.Topic) error {
 	if err := r.Conn.Save(&topic).Error; err != nil {
 		return err
 	}
@@ -47,7 +48,7 @@ func (r *TopicRepositoryImpl) Save(topic *domain.Topic) error {
 
 // Remove delete topic
 func (r *TopicRepositoryImpl) Remove(id int) error {
-	topic := &domain.Topic{}
+	topic := &model.Topic{}
 	if err := r.Conn.First(&topic, id).Error; err != nil {
 		return err
 	}
@@ -60,8 +61,8 @@ func (r *TopicRepositoryImpl) Remove(id int) error {
 }
 
 // Update data topic
-func (r *TopicRepositoryImpl) Update(topic *domain.Topic) error {
-	if err := r.Conn.Model(&topic).UpdateColumns(domain.Topic{Name: topic.Name, Slug: topic.Slug}).Error; err != nil {
+func (r *TopicRepositoryImpl) Update(topic *model.Topic) error {
+	if err := r.Conn.Model(&topic).UpdateColumns(model.Topic{Name: topic.Name, Slug: topic.Slug}).Error; err != nil {
 		return err
 	}
 

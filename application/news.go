@@ -2,20 +2,20 @@ package application
 
 import (
 	"github.com/daheige/go-ddd-api/config"
-	"github.com/daheige/go-ddd-api/domain"
+	"github.com/daheige/go-ddd-api/domain/model"
 	"github.com/daheige/go-ddd-api/infrastructure/pagination"
 	"github.com/daheige/go-ddd-api/infrastructure/persistence"
 )
 
 // GetNews returns domain.news by id
-func GetNews(id int) (*domain.News, error) {
+func GetNews(id int) (*model.News, error) {
 	repo := persistence.NewNewsRepositoryWithRDB(config.AppConf.DB)
 	return repo.Get(id)
 }
 
 // GetAllNews return all domain.news
-func GetAllNews(limit int, page int) ([]domain.News, error) {
-	var news []domain.News
+func GetAllNews(limit int, page int) ([]model.News, error) {
+	var news []model.News
 	pagination.Paging(&pagination.Param{
 		DB:      config.AppConf.DB.Preload("Topic"),
 		Page:    page,
@@ -27,7 +27,7 @@ func GetAllNews(limit int, page int) ([]domain.News, error) {
 }
 
 // AddNews saves new news
-func AddNews(p domain.News) error {
+func AddNews(p model.News) error {
 	repo := persistence.NewNewsRepositoryWithRDB(config.AppConf.DB)
 	return repo.Save(&p)
 }
@@ -39,7 +39,7 @@ func RemoveNews(id int) error {
 }
 
 // UpdateNews do remove news by id
-func UpdateNews(p domain.News, id int) error {
+func UpdateNews(p model.News, id int) error {
 	repo := persistence.NewNewsRepositoryWithRDB(config.AppConf.DB)
 	p.ID = uint(id)
 
@@ -47,13 +47,13 @@ func UpdateNews(p domain.News, id int) error {
 }
 
 // GetAllNewsByFilter return all domain.news by filter
-func GetAllNewsByFilter(status string) ([]domain.News, error) {
+func GetAllNewsByFilter(status string) ([]model.News, error) {
 	repo := persistence.NewNewsRepositoryWithRDB(config.AppConf.DB)
 	return repo.GetAllByStatus(status)
 }
 
 // GetNewsByTopic returns []domain.news by topic.slug
-func GetNewsByTopic(slug string) ([]*domain.News, error) {
+func GetNewsByTopic(slug string) ([]*model.News, error) {
 	repo := persistence.NewNewsRepositoryWithRDB(config.AppConf.DB)
 	return repo.GetBySlug(slug)
 }

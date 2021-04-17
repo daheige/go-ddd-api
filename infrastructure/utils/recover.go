@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 )
 
-// Recover catch server recover
+// Recover catch services recover
 func Recover() {
 	if err := recover(); err != nil {
 		log.Println("exec panic", map[string]interface{}{
