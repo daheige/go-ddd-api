@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -22,9 +21,6 @@ import (
 	"github.com/daheige/tigago/gutils"
 	"github.com/gorilla/mux"
 )
-
-// IsLetter function to check string is aplhanumeric only
-var IsLetter = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
 
 var graceWait = 5 * time.Second
 
