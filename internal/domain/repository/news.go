@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"github.com/daheige/go-ddd-api/domain/model"
+	"github.com/daheige/go-ddd-api/internal/domain/model"
 )
 
 // NewsRepository represent repository of  the news
-// Expect implementation by the infrastructure layer
+// Expect implementation by the infras layer
 type NewsRepository interface {
 	Get(id int) (*model.News, error)
 	GetAll() ([]model.News, error)

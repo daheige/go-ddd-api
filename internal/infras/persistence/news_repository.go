@@ -4,24 +4,21 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
-	"github.com/daheige/go-ddd-api/domain/model"
-	"github.com/daheige/go-ddd-api/domain/repository"
+	"github.com/daheige/go-ddd-api/internal/domain/model"
+	"github.com/daheige/go-ddd-api/internal/domain/repository"
 )
+
+var _ repository.NewsRepository = (*NewsRepositoryImpl)(nil)
 
 // NewsRepositoryImpl Implements repository.NewsRepository
 type NewsRepositoryImpl struct {
-	Conn *gorm.DB
-}
-
-// NewNewsRepositoryWithRDB returns initialized NewsRepositoryImpl
-func NewNewsRepositoryWithRDB(conn *gorm.DB) repository.NewsRepository {
-	return &NewsRepositoryImpl{Conn: conn}
+	DB *gorm.DB `inject:""`
 }
 
 // Get news by id return domain.news
 func (r *NewsRepositoryImpl) Get(id int) (*model.News, error) {
 	news := &model.News{}
-	if err := r.Conn.Preload("Topic").First(&news, id).Error; err != nil {
+	if err := r.DB.Preload("Topic").First(&news, id).Error; err != nil {
 		return nil, err
 	}
 	return news, nil
@@ -30,7 +27,7 @@ func (r *NewsRepositoryImpl) Get(id int) (*model.News, error) {
 // GetAll News return all domain.news
 func (r *NewsRepositoryImpl) GetAll() ([]model.News, error) {
 	news := []model.News{}
-	if err := r.Conn.Preload("Topic").Find(&news).Error; err != nil {
+	if err := r.DB.Preload("Topic").Find(&news).Error; err != nil {
 		return nil, err
 	}
 
@@ -39,7 +36,7 @@ func (r *NewsRepositoryImpl) GetAll() ([]model.News, error) {
 
 // Save to add news
 func (r *NewsRepositoryImpl) Save(news *model.News) error {
-	if err := r.Conn.Save(&news).Error; err != nil {
+	if err := r.DB.Save(&news).Error; err != nil {
 		return err
 	}
 
@@ -48,7 +45,7 @@ func (r *NewsRepositoryImpl) Save(news *model.News) error {
 
 // Remove to delete news by id
 func (r *NewsRepositoryImpl) Remove(id int) error {
-	tx := r.Conn.Begin()
+	tx := r.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -81,7 +78,8 @@ func (r *NewsRepositoryImpl) Remove(id int) error {
 
 // Update is update news
 func (r *NewsRepositoryImpl) Update(news *model.News) error {
-	if err := r.Conn.Model(&news).UpdateColumns(model.News{Title: news.Title, Slug: news.Slug, Content: news.Content, Status: news.Status, Topic: news.Topic}).Error; err != nil {
+	if err := r.DB.Model(&news).UpdateColumns(model.News{Title: news.Title, Slug: news.Slug,
+		Content: news.Content, Status: news.Status, Topic: news.Topic}).Error; err != nil {
 		return err
 	}
 
@@ -92,7 +90,7 @@ func (r *NewsRepositoryImpl) Update(news *model.News) error {
 func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]model.News, error) {
 	if status == "deleted" {
 		news := []model.News{}
-		if err := r.Conn.Unscoped().Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
+		if err := r.DB.Unscoped().Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
 			return nil, err
 		}
 
@@ -100,7 +98,7 @@ func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]model.News, error)
 	}
 
 	news := []model.News{}
-	if err := r.Conn.Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
+	if err := r.DB.Where("status = ?", status).Preload("Topic").Find(&news).Error; err != nil {
 		return nil, err
 	}
 
@@ -109,7 +107,14 @@ func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]model.News, error)
 
 // GetBySlug News return all []domain.news by topic.slug
 func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]*model.News, error) {
-	rows, err := r.Conn.Raw("SELECT news.id, news.title, news.slug, news.content, news.status FROM `news_topics` LEFT JOIN news ON news_topics.news_id=news.id WHERE news_topics.topic_id=(SELECT id as topic_id FROM `topics` WHERE slug = ?)", slug).Rows() // (*sql.Rows, error)
+	rows, err := r.DB.Raw("SELECT news.id, news.title, news.slug, news.content, news.status FROM `news_topics`"+
+		" LEFT JOIN news ON news_topics.news_id=news.id WHERE "+
+		"news_topics.topic_id=(SELECT id as topic_id FROM `topics`"+
+		" WHERE slug = ?)", slug).Rows() // (*sql.Rows, error)
+	if err != nil {
+		return nil, err
+	}
+
 	defer rows.Close()
 
 	us := make([]*model.News, 0)
