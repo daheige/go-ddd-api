@@ -25,7 +25,7 @@ func init() {
 
 func main() {
 	var app api.AppService
-	di := factory.CreateDI(factory.FbInject) // create an di container
+	di := factory.CreateDI(factory.FbInject) // create a di container
 	err := di.Provide(
 		&gdi.Object{Value: &app},
 		&gdi.Object{Value: config.Init()},
