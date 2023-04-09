@@ -49,12 +49,12 @@ func (s *NewsService) UpdateNews(p model.News, id int) error {
 	return s.NewsRepo.Update(&p)
 }
 
-// GetAllNewsByFilter return all domain.news by filter
+// GetAllNewsByFilter return all model.News by filter
 func (s *NewsService) GetAllNewsByFilter(status string) ([]model.News, error) {
 	return s.NewsRepo.GetAllByStatus(status)
 }
 
-// GetNewsByTopic returns []domain.news by topic.slug
-func (s *NewsService) GetNewsByTopic(slug string) ([]*model.News, error) {
+// GetNewsByTopic returns []model.News by topic.slug
+func (s *NewsService) GetNewsByTopic(slug string) ([]model.News, error) {
 	return s.NewsRepo.GetBySlug(slug)
 }

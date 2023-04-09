@@ -105,8 +105,8 @@ func (r *NewsRepositoryImpl) GetAllByStatus(status string) ([]model.News, error)
 	return news, nil
 }
 
-// GetBySlug News return all []domain.news by topic.slug
-func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]*model.News, error) {
+// GetBySlug News return all []model.News by topic.slug
+func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]model.News, error) {
 	rows, err := r.DB.Raw("SELECT news.id, news.title, news.slug, news.content, news.status FROM `news_topics`"+
 		" LEFT JOIN news ON news_topics.news_id=news.id WHERE "+
 		"news_topics.topic_id=(SELECT id as topic_id FROM `topics`"+
@@ -117,10 +117,9 @@ func (r *NewsRepositoryImpl) GetBySlug(slug string) ([]*model.News, error) {
 
 	defer rows.Close()
 
-	us := make([]*model.News, 0)
-
+	us := make([]model.News, 0, 10)
 	for rows.Next() {
-		u := &model.News{}
+		u := model.News{}
 		err = rows.Scan(&u.ID, &u.Title, &u.Slug, &u.Content, &u.Status)
 
 		if err != nil {
