@@ -4,7 +4,7 @@ Create REST API with domain driven approach (DDD) using Golang, GORM (Object Rel
 
 ## Service Run
 
-- Import doc/db.sql to mysql database
+- Import docs/db.sql to mysql database
 - Set project environment and run
 ```bash
 # copy and rename config.exam.yaml
@@ -238,8 +238,8 @@ curl --request PUT \
 - [x] **Opsional:** Deploy to (heroku/aws/azure/digital ocean)
 - [x] **Opsional:** Database setup migration schema DB
 
-## access log
-For the access log, you can see the https://github.com/go-god/logger and then access it
+## logger
+you can see the https://github.com/go-god/logger
 
 ## References & Library
 - go-god: https://github.com/go-god
