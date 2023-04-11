@@ -4,8 +4,8 @@ Create REST API with domain driven approach (DDD) using Golang, GORM (Object Rel
 
 ## Service Run
 
-Set project environment and run
-
+- Import doc/db.sql to mysql database
+- Set project environment and run
 ```bash
 # copy and rename config.exam.yaml
 cp config.exam.yaml config.yaml
@@ -34,7 +34,7 @@ go run main.go
 # API Endpoint : http://localhost:8000/api/v1/
 ```
 
-## Design
+## Arch Design
 
 - Application
   - Write business logic
@@ -157,10 +157,10 @@ curl --request POST \
 	"status": "publish",
 	"Topic": [
 		{
-			"ID": 2,
-			"CreatedAt": "2019-01-19T03:12:32Z",
-			"UpdatedAt": "2019-01-19T03:12:32Z",
-			"DeletedAt": null,
+			"id": 2,
+			"created_at": "2019-01-19T03:12:32Z",
+			"updated_at": "2019-01-19T03:12:32Z",
+			"deleted_at": null,
 			"name": "Liputan Khusus",
 			"slug": "liputan-khusus",
 			"News": null
@@ -193,10 +193,10 @@ curl --request PUT \
 	"status": "draft",
 	"Topic": [
 		{
-			"ID": 2,
-			"CreatedAt": "2019-01-19T03:12:32Z",
-			"UpdatedAt": "2019-01-19T03:12:32Z",
-			"DeletedAt": null,
+			"id": 2,
+			"created_at": "2019-01-19T03:12:32Z",
+			"updated_at": "2019-01-19T03:12:32Z",
+			"deleted_at": null,
 			"name": "Liputan Khusus",
 			"slug": "liputan-khusus",
 			"News": null
@@ -242,7 +242,7 @@ curl --request PUT \
 For the access log, you can see the https://github.com/go-god/logger and then access it
 
 ## References & Library
-
+- go-god: https://github.com/go-god
 - DDD Skeleton : https://github.com/takashabe/go-ddd-sample
 - Gorilla/mux : https://github.com/gorilla/mux v1.8.0
 - GORM Documentation : http://doc.gorm.io
