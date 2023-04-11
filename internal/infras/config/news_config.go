@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-god/setting"
 	_ "github.com/go-sql-driver/mysql"
@@ -19,11 +20,13 @@ type DBConfig struct {
 }
 
 // AppConfig app section
+// Underline variables need to be annotated with a mapstructure tag
 type AppConfig struct {
-	Port     int
-	AppName  string
-	AppEnv   string
-	AppDebug bool
+	Port         int
+	AppName      string        `mapstructure:"app_name"`
+	AppEnv       string        `mapstructure:"app_env"`
+	AppDebug     bool          `mapstructure:"app_debug"`
+	GracefulWait time.Duration `mapstructure:"graceful_wait"`
 }
 
 // configImpl config

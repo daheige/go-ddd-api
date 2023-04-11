@@ -16,6 +16,8 @@ app:
   port: 8000
   app_env: "local"
   app_debug: true
+  app_name: "news"
+  graceful_wait: 5s
 
 # db config
 db:

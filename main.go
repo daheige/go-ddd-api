@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var app api.NewsService
+	var app api.NewsHandler
 	// dependency injection
 	if err := providers.Inject(&app); err != nil {
 		log.Fatalf("provier error:%s\n", err)

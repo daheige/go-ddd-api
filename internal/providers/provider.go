@@ -15,7 +15,7 @@ import (
 )
 
 // Inject dependency injection
-func Inject(app *api.NewsService) error {
+func Inject(app *api.NewsHandler) error {
 	conf := config.NewConfig()
 	di := factory.CreateDI(factory.FbInject) // create a di container
 	err := di.Provide(
@@ -29,6 +29,7 @@ func Inject(app *api.NewsService) error {
 		&gdi.Object{Value: &application.NewsService{}},
 		&gdi.Object{Value: &persistence.NewsRepositoryImpl{}},
 		&gdi.Object{Value: &persistence.TopicRepositoryImpl{}},
+		&gdi.Object{Value: &api.RouterHandler{}},
 	)
 	if err != nil {
 		return fmt.Errorf("provide error:%s", err.Error())
