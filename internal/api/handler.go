@@ -11,36 +11,37 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
-
-	"github.com/daheige/go-ddd-api/api/middleware"
-	"github.com/daheige/go-ddd-api/api/news"
-	"github.com/daheige/go-ddd-api/api/topics"
+	"github.com/daheige/go-ddd-api/internal/api/middleware"
+	"github.com/daheige/go-ddd-api/internal/api/news"
+	"github.com/daheige/go-ddd-api/internal/api/topics"
+	"github.com/daheige/go-ddd-api/internal/infras/config"
 	"github.com/daheige/go-ddd-api/internal/infras/migration"
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
+	"github.com/gorilla/mux"
 )
 
 var graceWait = 5 * time.Second
 
-// AppService application
-type AppService struct {
+// NewsService application
+type NewsService struct {
+	AppConf       *config.AppConfig        `inject:""`
 	TopicHandler  *topics.TopicHandler     `inject:""`
 	NewsHandler   *news.NewsHandler        `inject:""`
 	MigrateAction *migration.MigrateAction `inject:""`
 }
 
 // Run start services
-func (a *AppService) Run(port int) {
-	log.Printf("Server running on port:%d/", port)
+func (s *NewsService) Run() {
+	log.Printf("Server running on port:%d/", s.AppConf.Port)
 
 	// register mux router
-	router := a.RouteHandler()
+	router := s.RouteHandler()
 
 	// create http services
 	server := &http.Server{
 		// Handler: http.TimeoutHandler(router, time.Second*6, `{code:503,"message":"services timeout"}`),
 		Handler:      router,
-		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+		Addr:         fmt.Sprintf("0.0.0.0:%d", s.AppConf.Port),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
@@ -73,13 +74,13 @@ func (a *AppService) Run(port int) {
 	// Block until we receive our signal.
 	<-ch
 
-	// Create a deadline to wait for.
+	// Create s deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), graceWait)
 	defer cancel()
 
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
-	// Optionally, you could run srv.Shutdown in a goroutine and block on
+	// Optionally, you could run srv.Shutdown in s goroutine and block on
 	// if your application should wait for other services
 	// to finalize based on context cancellation.
 	go server.Shutdown(ctx)
@@ -89,7 +90,7 @@ func (a *AppService) Run(port int) {
 }
 
 // RouteHandler returns the initialized router
-func (a *AppService) RouteHandler() *mux.Router {
+func (s *NewsService) RouteHandler() *mux.Router {
 	r := mux.NewRouter()
 
 	r.StrictSlash(true)
@@ -101,25 +102,25 @@ func (a *AppService) RouteHandler() *mux.Router {
 	r.NotFoundHandler = http.HandlerFunc(middleware.NotFoundHandler)
 
 	// Index Route
-	r.HandleFunc("/", a.home)
-	r.HandleFunc("/api/v1", a.home)
+	r.HandleFunc("/", s.home)
+	r.HandleFunc("/api/v1", s.home)
 
 	// News Route
-	r.HandleFunc("/api/v1/news", a.NewsHandler.GetAllNews).Methods("GET")
-	r.HandleFunc("/api/v1/news/{param}", a.NewsHandler.GetNews).Methods("GET")
-	r.HandleFunc("/api/v1/news", a.NewsHandler.CreateNews).Methods("POST")
-	r.HandleFunc("/api/v1/news/{news_id}", a.NewsHandler.RemoveNews).Methods("DELETE")
-	r.HandleFunc("/api/v1/news/{news_id}", a.NewsHandler.UpdateNews).Methods("PUT")
+	r.HandleFunc("/api/v1/news", s.NewsHandler.GetAllNews).Methods("GET")
+	r.HandleFunc("/api/v1/news/{param}", s.NewsHandler.GetNews).Methods("GET")
+	r.HandleFunc("/api/v1/news", s.NewsHandler.CreateNews).Methods("POST")
+	r.HandleFunc("/api/v1/news/{news_id}", s.NewsHandler.RemoveNews).Methods("DELETE")
+	r.HandleFunc("/api/v1/news/{news_id}", s.NewsHandler.UpdateNews).Methods("PUT")
 
 	// Topic Route
-	r.HandleFunc("/api/v1/topic", a.TopicHandler.GetAllTopic).Methods("GET")
-	r.HandleFunc("/api/v1/topic/{topic_id}", a.TopicHandler.GetTopic).Methods("GET")
-	r.HandleFunc("/api/v1/topic", a.TopicHandler.CreateTopic).Methods("POST")
-	r.HandleFunc("/api/v1/topic/{topic_id}", a.TopicHandler.RemoveTopic).Methods("DELETE")
-	r.HandleFunc("/api/v1/topic/{topic_id}", a.TopicHandler.UpdateTopic).Methods("PUT")
+	r.HandleFunc("/api/v1/topic", s.TopicHandler.GetAllTopic).Methods("GET")
+	r.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.GetTopic).Methods("GET")
+	r.HandleFunc("/api/v1/topic", s.TopicHandler.CreateTopic).Methods("POST")
+	r.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.RemoveTopic).Methods("DELETE")
+	r.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.UpdateTopic).Methods("PUT")
 
 	// Migration Route
-	r.HandleFunc("/api/v1/migrate", a.migrate)
+	r.HandleFunc("/api/v1/migrate", s.migrate)
 
 	err := r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 		pathTemplate, err := route.GetPathTemplate()
@@ -160,8 +161,8 @@ func (a *AppService) RouteHandler() *mux.Router {
 }
 
 // migrate db migrate handler
-func (a *AppService) migrate(w http.ResponseWriter, r *http.Request) {
-	err := a.MigrateAction.DBMigrate()
+func (s *NewsService) migrate(w http.ResponseWriter, r *http.Request) {
+	err := s.MigrateAction.DBMigrate()
 	if err != nil {
 		utils.Error(w, http.StatusNotFound, err, err.Error())
 		return
@@ -172,6 +173,6 @@ func (a *AppService) migrate(w http.ResponseWriter, r *http.Request) {
 }
 
 // home index handler
-func (a *AppService) home(w http.ResponseWriter, _ *http.Request) {
+func (s *NewsService) home(w http.ResponseWriter, _ *http.Request) {
 	utils.Respond(w, http.StatusOK, "GO DDD API")
 }

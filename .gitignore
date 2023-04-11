@@ -1,4 +1,4 @@
-config.toml
+config.yaml
 *.log
 .idea
 *.dio

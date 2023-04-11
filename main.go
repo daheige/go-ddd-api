@@ -1,34 +1,30 @@
 package main
 
 import (
-	"flag"
 	"log"
 
-	"github.com/go-god/gdi"
-	"github.com/go-god/gdi/factory"
-
-	"github.com/daheige/go-ddd-api/api"
-	"github.com/daheige/go-ddd-api/api/news"
-	"github.com/daheige/go-ddd-api/api/topics"
+	"github.com/daheige/go-ddd-api/internal/api"
+	"github.com/daheige/go-ddd-api/internal/api/news"
+	"github.com/daheige/go-ddd-api/internal/api/topics"
 	"github.com/daheige/go-ddd-api/internal/application"
 	"github.com/daheige/go-ddd-api/internal/infras/config"
 	"github.com/daheige/go-ddd-api/internal/infras/migration"
 	"github.com/daheige/go-ddd-api/internal/infras/persistence"
+	"github.com/go-god/gdi"
+	"github.com/go-god/gdi/factory"
 )
 
-var port int
-
-func init() {
-	flag.IntVar(&port, "port", 8000, "app run port,eg:8000")
-	flag.Parse()
-}
-
 func main() {
-	var app api.AppService
+	var (
+		app  api.NewsService
+		conf = config.NewConfig()
+	)
+
 	di := factory.CreateDI(factory.FbInject) // create a di container
 	err := di.Provide(
 		&gdi.Object{Value: &app},
-		&gdi.Object{Value: config.Init()},
+		&gdi.Object{Value: conf.AppConfig()}, // app section inject
+		&gdi.Object{Value: conf.InitDB()},    // db inject
 		&gdi.Object{Value: &migration.MigrateAction{}},
 		&gdi.Object{Value: &news.NewsHandler{}},
 		&gdi.Object{Value: &topics.TopicHandler{}},
@@ -48,5 +44,5 @@ func main() {
 	}
 
 	// app service run
-	app.Run(port)
+	app.Run()
 }

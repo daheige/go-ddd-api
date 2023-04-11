@@ -1,0 +1,13 @@
+app:
+  # app run port
+  port: 8000
+  app_env: "local"
+  app_debug: true
+
+# db config
+db:
+  user: ""
+  password: ""
+  host: ""
+  port: ""
+  dbname: ""

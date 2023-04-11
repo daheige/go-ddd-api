@@ -7,15 +7,23 @@ Create REST API with domain driven approach (DDD) using Golang, GORM (Object Rel
 Set project environment and run
 
 ```bash
-# copy and rename config.toml.example
-cp config.toml.example config.toml
+# copy and rename config.exam.yaml
+cp config.exam.yaml config.yaml
 
-# set config.toml to your env
-user="your_db_username"
-password="your_db_password"
-host="your_db_host"
-port="your_db_port"
-dbname="your_db_name"
+# set config.yaml
+app:
+  # app run port
+  port: 8000
+  app_env: "local"
+  app_debug: true
+
+# db config
+db:
+  user="your_db_username"
+  password="your_db_password"
+  host="your_db_host"
+  port="your_db_port"
+  dbname="your_db_name"
 
 # run golang project
 go run main.go
@@ -233,5 +241,5 @@ curl --request PUT \
 - Gorilla/mux : https://github.com/gorilla/mux v1.8.0
 - GORM Documentation : http://doc.gorm.io
 - GORM Pagination Extension : https://github.com/biezhi/gorm-paginator
-- Toml : https://github.com/BurntSushi/toml
+- Viper : https://github.com/spf13/viper
 - Deploy GoApp on GCP GAE https://medium.com/google-cloud/deploying-your-go-app-on-google-app-engine-5f4a5c2a837
