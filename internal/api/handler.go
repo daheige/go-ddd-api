@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/daheige/go-ddd-api/internal/infras/config"
+	"github.com/daheige/go-ddd-api/internal/infras/monitor"
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
 )
 
-// NewsHandler application
+// NewsHandler service handler
 type NewsHandler struct {
-	AppConfig     *config.AppConfig `inject:""`
-	RouterService *RouterHandler    `inject:""`
+	AppConfig         *config.AppConfig          `inject:""`
+	RouterHandler     *RouterHandler             `inject:""`
+	PrometheusMonitor *monitor.PrometheusMonitor `inject:""`
 }
 
 // Run start services
@@ -27,7 +29,10 @@ func (s *NewsHandler) Run() {
 	log.Printf("Server running on:%s", addr)
 
 	// register mux router
-	router := s.RouterService.Router()
+	router := s.RouterHandler.Router()
+
+	// service prometheus monitor
+	s.PrometheusMonitor.Monitor()
 
 	// create http services
 	server := &http.Server{

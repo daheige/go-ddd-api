@@ -23,6 +23,7 @@ type DBConfig struct {
 // Underline variables need to be annotated with a mapstructure tag
 type AppConfig struct {
 	Port         int
+	PProfPort    int           `mapstructure:"pprof_port"`
 	AppName      string        `mapstructure:"app_name"`
 	AppEnv       string        `mapstructure:"app_env"`
 	AppDebug     bool          `mapstructure:"app_debug"`
@@ -52,6 +53,9 @@ func (s *configImpl) load() {
 
 	if err := conf.ReadSection("app", &s.App); err != nil {
 		log.Fatalf("read app section err:%s", err.Error())
+	}
+	if s.App.PProfPort == 0 {
+		s.App.PProfPort = s.App.Port + 1000
 	}
 
 	if err := conf.ReadSection("db", &s.DB); err != nil {

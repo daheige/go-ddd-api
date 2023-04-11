@@ -14,6 +14,7 @@ cp config.exam.yaml config.yaml
 app:
   # app run port
   port: 8000
+  pprof_port: 8090
   app_env: "local"
   app_debug: true
   app_name: "news"
@@ -236,6 +237,9 @@ curl --request PUT \
 - [ ] **Mandatory:** API Functional Test
 - [x] **Opsional:** Deploy to (heroku/aws/azure/digital ocean)
 - [x] **Opsional:** Database setup migration schema DB
+
+## access log
+For the access log, you can see the https://github.com/go-god/logger and then access it
 
 ## References & Library
 

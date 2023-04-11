@@ -9,6 +9,7 @@ import (
 	"github.com/daheige/go-ddd-api/internal/api/middleware"
 	"github.com/daheige/go-ddd-api/internal/api/news"
 	"github.com/daheige/go-ddd-api/internal/api/topics"
+	"github.com/daheige/go-ddd-api/internal/infras/config"
 	"github.com/daheige/go-ddd-api/internal/infras/migration"
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
 	"github.com/gorilla/mux"
@@ -16,6 +17,7 @@ import (
 
 // RouterHandler api router
 type RouterHandler struct {
+	AppConfig     *config.AppConfig        `inject:""`
 	TopicHandler  *topics.TopicHandler     `inject:""`
 	NewsHandler   *news.NewsHandler        `inject:""`
 	MigrateAction *migration.MigrateAction `inject:""`
@@ -55,9 +57,11 @@ func (s *RouterHandler) Router() *mux.Router {
 	router.HandleFunc("/api/v1/migrate", s.migrate)
 
 	// router walk check
-	err := s.walk(router)
-	if err != nil {
-		fmt.Println("router walk error:", err)
+	if s.AppConfig.AppDebug {
+		err := s.walk(router)
+		if err != nil {
+			fmt.Println("router walk error:", err)
+		}
 	}
 
 	return router
