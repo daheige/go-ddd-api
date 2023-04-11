@@ -383,8 +383,6 @@ cloud.google.com/go/workflows v1.8.0/go.mod h1:ysGhmEajwZxGn1OhGOGKsTXc5PyxOc0vf
 cloud.google.com/go/workflows v1.9.0/go.mod h1:ZGkj1aFIOd9c8Gerkjjq7OW7I5+l6cSvT3ujaO/WwSA=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/BurntSushi/toml v0.4.1 h1:GaI7EiDXDRfa8VshkTj7Fym7ha+y8/XxIgD2okUIjLw=
-github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
@@ -473,6 +471,8 @@ github.com/go-god/gdi v1.0.3 h1:0dO7avRO+EzgWcHrBU22ZvTcx//bn+kXYpA8KJZGdPE=
 github.com/go-god/gdi v1.0.3/go.mod h1:4VFsZ7hTh/yHz+fxyPfw87CyoNmpd9x+zGNdey4Vukw=
 github.com/go-god/gutils v1.1.0 h1:YOc1ZF/+1inVURVfqlIxkHuZu4+ClmwMpiVXSmWUsew=
 github.com/go-god/gutils v1.1.0/go.mod h1:WESRAE768WMVlId8PjMWVThyhpUy853QiXWiFMyp7DI=
+github.com/go-god/setting v1.2.0 h1:vD3vnL2tPQs/KXQIqb9eHkjS26t4qb8ETK/PIdUySTg=
+github.com/go-god/setting v1.2.0/go.mod h1:Uafe0BVx84mPbVAHNRzRUz/Wyu2A3X6t0chyA9x7mKU=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=

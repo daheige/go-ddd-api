@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/daheige/go-ddd-api/internal/infras/setting"
+	"github.com/go-god/setting"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
 
-// DBConf database config
+// DBConfig database config
 type DBConfig struct {
 	User     string
 	Password string
@@ -32,7 +32,7 @@ type configImpl struct {
 	App AppConfig
 }
 
-// New load config
+// NewConfig load config
 func NewConfig() *configImpl {
 	s := &configImpl{}
 	s.load()
@@ -48,11 +48,11 @@ func (s *configImpl) load() {
 	}
 
 	if err := conf.ReadSection("app", &s.App); err != nil {
-		log.Fatalf("read config file err:%s", err.Error())
+		log.Fatalf("read app section err:%s", err.Error())
 	}
 
 	if err := conf.ReadSection("db", &s.DB); err != nil {
-		log.Fatalf("read config file err:%s", err.Error())
+		log.Fatalf("read db section err:%s", err.Error())
 	}
 }
 

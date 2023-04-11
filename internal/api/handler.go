@@ -32,7 +32,8 @@ type NewsService struct {
 
 // Run start services
 func (s *NewsService) Run() {
-	log.Printf("Server running on port:%d/", s.AppConf.Port)
+	addr := fmt.Sprintf("0.0.0.0:%d", s.AppConf.Port)
+	log.Printf("Server running on:%s", addr)
 
 	// register mux router
 	router := s.RouteHandler()
@@ -41,7 +42,7 @@ func (s *NewsService) Run() {
 	server := &http.Server{
 		// Handler: http.TimeoutHandler(router, time.Second*6, `{code:503,"message":"services timeout"}`),
 		Handler:      router,
-		Addr:         fmt.Sprintf("0.0.0.0:%d", s.AppConf.Port),
+		Addr:         addr,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
