@@ -151,13 +151,13 @@ curl --request POST \
   --url http://localhost:8000/api/v1/news \
   --header 'content-type: application/json' \
   --data '{
-	"title": "Bonnie Triyana: TNI Razia Buku Upaya Desukarnoisasi",
+	"title": "Triyana: TNI Razia Buku Upaya Desukarnoisasi",
 	"slug": "memberangus-buku-memberangus-ilmu-1547439849539914993",
 	"content": "30 November 1957, kunjungan Presiden Sukarno di Perguruan Cikini, Jakarta, atas undangan guru mendadak jadi tragedi. Hujan granat mendarat ketika ia berjalan keluar dari sekolah dua anaknya itu, Megawati Soekarnoputri dan Guruh Soekarnoputra. Dua pengawal, Oding Suhendar dan Sudiyo, merangkul Sukarno pergi menyelamatkan diri. Kedua anak Sukarno sudah lebih dulu diamankan.",
 	"status": "publish",
-	"Topic": [
+	"topic": [
 		{
-			"id": 2,
+			"id": 1,
 			"created_at": "2019-01-19T03:12:32Z",
 			"updated_at": "2019-01-19T03:12:32Z",
 			"deleted_at": null,
@@ -181,24 +181,24 @@ curl --request DELETE \
   --url http://localhost:8000/api/v1/topic/3
 ```
 
-Update a news, URL PUT `/api/v1/topic/2`
+Update a news, URL PUT `/api/v1/news/2`
 ```bash
 curl --request PUT \
   --url http://localhost:8000/api/v1/news/2 \
   --header 'content-type: application/json' \
   --data '{
 	"title": "[draft] Memberangus Buku, Memberangus Ilmu",
-	"slug": "memberangus-buku-memberangus-ilmu-1547439849539914993",
-	"content": "Buku-buku yang disita itu berjudul Kronik ‘65: Catatan Hari Per Hari Peristiwa G30S Sebelum dan Sesudahnya, Jasmerah: Pidato-pidato Spektakuler Bung Karno Sepanjang Massa, dan Mengincar Bung Besar: Tujuh Upaya Pembunuhan Bung Karno. Tak ada satu pun judul buku yang memuat kata “PKI” atau “komunis” seperti yang dituduhkan",
+	"slug": "1memberangus-buku-memberangus-ilmu-1547439849539914993",
+	"content": "yang disita itu berjudul Kronik ‘65: Catatan Hari Per Hari Peristiwa G30S Sebelum dan Sesudahnya, Jasmerah: Pidato-pidato Spektakuler Bung Karno Sepanjang Massa, dan Mengincar Bung Besar: Tujuh Upaya Pembunuhan Bung Karno. Tak ada satu pun judul buku yang memuat kata “PKI” atau “komunis” seperti yang dituduhkan",
 	"status": "draft",
-	"Topic": [
+	"topic": [
 		{
 			"id": 2,
 			"created_at": "2019-01-19T03:12:32Z",
-			"updated_at": "2019-01-19T03:12:32Z",
+			"updated_at": "2023-01-19T03:12:32Z",
 			"deleted_at": null,
-			"name": "Liputan Khusus",
-			"slug": "liputan-khusus",
+			"name": "Liputan Khusus1",
+			"slug": "liputan-khusus2",
 			"News": null
 		}
 	]
@@ -208,13 +208,16 @@ curl --request PUT \
 Update a topic, URL PUT `/api/v1/topic/2`
 ```bash
 curl --request PUT \
-  --url http://localhost:8000/api/v1/topic/3 \
+  --url http://localhost:8000/api/v1/topic/2 \
   --header 'content-type: application/json' \
   --data '{
 	"name":"Sepak Bola Nasional",
 	"slug":"sepak-bola-national"
 }'
 ```
+## prometheus metrics and pprof
+- http://localhost:8090/metrics
+- http://localhost:8090/debug/pprof/
 
 ## Product Items Backlog
 
@@ -244,7 +247,7 @@ you can see the https://github.com/go-god/logger
 ## References & Library
 - go-god: https://github.com/go-god
 - DDD Skeleton : https://github.com/takashabe/go-ddd-sample
-- Gorilla/mux : https://github.com/gorilla/mux v1.8.0
+- gin: https://github.com/gin-gonic/gin 1.9.0
 - GORM Documentation : http://doc.gorm.io
 - GORM Pagination Extension : https://github.com/biezhi/gorm-paginator
 - Viper : https://github.com/spf13/viper

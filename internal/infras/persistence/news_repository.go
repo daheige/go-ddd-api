@@ -78,8 +78,10 @@ func (r *NewsRepositoryImpl) Remove(id int) error {
 
 // Update is update news
 func (r *NewsRepositoryImpl) Update(news *model.News) error {
-	if err := r.DB.Model(&news).UpdateColumns(model.News{Title: news.Title, Slug: news.Slug,
-		Content: news.Content, Status: news.Status, Topic: news.Topic}).Error; err != nil {
+	n := model.News{Title: news.Title, Slug: news.Slug,
+		Content: news.Content, Status: news.Status, Topic: news.Topic}
+	n.UpdatedAt = news.UpdatedAt
+	if err := r.DB.Model(&news).UpdateColumns(n).Error; err != nil {
 		return err
 	}
 

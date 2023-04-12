@@ -1,10 +1,8 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/daheige/go-ddd-api/internal/api/middleware"
 	"github.com/daheige/go-ddd-api/internal/api/news"
@@ -12,7 +10,7 @@ import (
 	"github.com/daheige/go-ddd-api/internal/infras/config"
 	"github.com/daheige/go-ddd-api/internal/infras/migration"
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 // RouterHandler api router
@@ -24,102 +22,65 @@ type RouterHandler struct {
 }
 
 // Router create router handler
-func (s *RouterHandler) Router() *mux.Router {
-	router := mux.NewRouter()
-
-	router.StrictSlash(true)
-
-	// install access log and recover handler
-	router.Use(middleware.AccessLog, middleware.RecoverHandler)
-
-	// not found handler
-	router.NotFoundHandler = http.HandlerFunc(middleware.NotFoundHandler)
-
-	// Index Route
-	router.HandleFunc("/", s.home)
-	router.HandleFunc("/api/v1", s.home)
-
-	// News Route
-	router.HandleFunc("/api/v1/news", s.NewsHandler.GetAllNews).Methods("GET")
-	router.HandleFunc("/api/v1/news/{param}", s.NewsHandler.GetNews).Methods("GET")
-	router.HandleFunc("/api/v1/news", s.NewsHandler.CreateNews).Methods("POST")
-	router.HandleFunc("/api/v1/news/{news_id}", s.NewsHandler.RemoveNews).Methods("DELETE")
-	router.HandleFunc("/api/v1/news/{news_id}", s.NewsHandler.UpdateNews).Methods("PUT")
-
-	// Topic Route
-	router.HandleFunc("/api/v1/topic", s.TopicHandler.GetAllTopic).Methods("GET")
-	router.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.GetTopic).Methods("GET")
-	router.HandleFunc("/api/v1/topic", s.TopicHandler.CreateTopic).Methods("POST")
-	router.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.RemoveTopic).Methods("DELETE")
-	router.HandleFunc("/api/v1/topic/{topic_id}", s.TopicHandler.UpdateTopic).Methods("PUT")
-
-	// Migration Route
-	router.HandleFunc("/api/v1/migrate", s.migrate)
-
-	// router walk check
-	if s.AppConfig.AppDebug {
-		err := s.walk(router)
-		if err != nil {
-			fmt.Println("router walk error:", err)
-		}
-	}
-
+func (s *RouterHandler) Router() http.Handler {
+	// gin mode
+	s.ginMode()
+	router := gin.New()
+	router.Use(middleware.AccessLog(), middleware.RecoverHandler())
+	router.NoRoute(middleware.NotFoundHandler())
+	s.webRoute(router)
 	return router
 }
 
-func (s *RouterHandler) walk(router *mux.Router) error {
-	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		pathTemplate, err := route.GetPathTemplate()
-		if err == nil {
-			fmt.Println("ROUTE:", pathTemplate)
-		}
-		pathRegexp, err := route.GetPathRegexp()
-		if err == nil {
-			fmt.Println("Path regexp:", pathRegexp)
-		}
-
-		var queriesTemplates []string
-		queriesTemplates, err = route.GetQueriesTemplates()
-		if err == nil {
-			fmt.Println("Queries templates:", strings.Join(queriesTemplates, ","))
-		}
-
-		var queriesRegexps []string
-		queriesRegexps, err = route.GetQueriesRegexp()
-		if err == nil {
-			fmt.Println("Queries regexps:", strings.Join(queriesRegexps, ","))
-		}
-
-		var methods []string
-		methods, err = route.GetMethods()
-		if err == nil {
-			fmt.Println("Methods:", strings.Join(methods, ","))
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("router walk error:", err)
+func (s *RouterHandler) ginMode() {
+	// gin mode设置
+	switch s.AppConfig.AppEnv {
+	case "local", "dev":
+		gin.SetMode(gin.DebugMode)
+	case "testing":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.ReleaseMode)
 	}
+}
 
-	return err
+func (s *RouterHandler) webRoute(router *gin.Engine) {
+	// home route
+	router.GET("/", s.home)
+	router.GET("/api/v1", s.home)
+
+	// News route
+	router.GET("/api/v1/news", s.NewsHandler.GetAllNews)
+	router.GET("/api/v1/news/:param", s.NewsHandler.GetNews)
+	router.POST("/api/v1/news", s.NewsHandler.CreateNews)
+	router.DELETE("/api/v1/news/:news_id", s.NewsHandler.RemoveNews)
+	router.PUT("/api/v1/news/:news_id", s.NewsHandler.UpdateNews)
+
+	// Topic route
+	router.GET("/api/v1/topic", s.TopicHandler.GetAllTopic)
+	router.GET("/api/v1/topic/:topic_id", s.TopicHandler.GetTopic)
+	router.POST("/api/v1/topic", s.TopicHandler.CreateTopic)
+	router.DELETE("/api/v1/topic/:topic_id", s.TopicHandler.RemoveTopic)
+	router.PUT("/api/v1/topic/:topic_id", s.TopicHandler.UpdateTopic)
+
+	// Migration Route
+	router.POST("/api/v1/migrate", s.migrate)
 }
 
 // migrate db migrate handler
-func (s *RouterHandler) migrate(w http.ResponseWriter, r *http.Request) {
+func (s *RouterHandler) migrate(c *gin.Context) {
 	err := s.MigrateAction.DBMigrate()
 	if err != nil {
-		log.Println("request_uri: ", r.RequestURI)
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		log.Println("request_uri: ", c.Request.RequestURI)
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
 	msg := "Success Migrate"
-	utils.JSON(w, http.StatusOK, msg)
+	utils.JSON(c, http.StatusOK, msg)
 }
 
 // home index handler
-func (s *RouterHandler) home(w http.ResponseWriter, _ *http.Request) {
-	utils.Respond(w, http.StatusOK, "GO DDD API")
+func (s *RouterHandler) home(c *gin.Context) {
+	c.String(http.StatusOK, "GO DDD API")
 }

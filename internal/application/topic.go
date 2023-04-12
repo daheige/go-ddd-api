@@ -35,8 +35,7 @@ func (s *TopicService) RemoveTopic(id int) error {
 }
 
 // UpdateTopic do update topic by id
-func (s *TopicService) UpdateTopic(p model.Topic, id int) error {
-	p.ID = uint(id)
-
-	return s.TopicRepo.Update(&p)
+func (s *TopicService) UpdateTopic(topic model.Topic, id int) error {
+	topic.ID = uint(id)
+	return s.TopicRepo.Update(&topic)
 }

@@ -10,20 +10,24 @@ import (
 	"time"
 
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/go-god/gutils"
 	"github.com/go-god/logger"
 	"go.uber.org/zap"
 )
 
 // NotFoundHandler not found api router
-func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("this page not found"))
+func NotFoundHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"message": "this page not found!",
+		})
+	}
 }
 
 // RecoverHandler recover handler
-func RecoverHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func RecoverHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
 				// log.Println("error: ", err)
@@ -31,29 +35,33 @@ func RecoverHandler(h http.Handler) http.Handler {
 				// 	"trace_error": string(debug.Stack()),
 				// })
 
-				ctx := r.Context()
+				ctx := c.Request.Context()
 				logger.Info(ctx, "exec panic error",
 					zap.String("module", "web"), zap.String("trace_error", string(debug.Stack())),
 				)
 
+				// broker pipe
 				if isBrokenPipe(ctx, err) {
-					w.WriteHeader(http.StatusInternalServerError)
+					c.AbortWithStatus(http.StatusInternalServerError)
 					return
 				}
 
 				// services error
-				http.Error(w, "services error", http.StatusInternalServerError)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, map[string]interface{}{
+					"code":    http.StatusInternalServerError,
+					"message": "server inner error",
+				})
 				return
 			}
 		}()
 
-		h.ServeHTTP(w, r)
-	})
+		c.Next()
+	}
 }
 
 // AccessLog access log
-func AccessLog(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func AccessLog() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		start := time.Now()
 		// log.Println("exec begin", nil)
 		// log.Println("request before")
@@ -61,34 +69,34 @@ func AccessLog(h http.Handler) http.Handler {
 		// log.Println("request uri: ", r.RequestURI)
 
 		// x-request-id
-		reqId := r.Header.Get("x-request-id")
+		reqId := c.GetHeader("x-request-id")
 		if reqId == "" {
 			reqId = gutils.Uuid()
 		}
 
 		// log.Println("log_id: ", reqId)
 		userAgentKey := logger.CtxKey{Name: "user-agent"}
-		userAgent := r.Header.Get("User-Agent")
-		r = utils.ContextSet(r, logger.XRequestID, reqId)
-		r = utils.ContextSet(r, logger.ReqClientIP, r.RemoteAddr)
-		r = utils.ContextSet(r, logger.RequestMethod, r.Method)
-		r = utils.ContextSet(r, logger.RequestURI, r.RequestURI)
-		r = utils.ContextSet(r, userAgentKey, userAgent)
+		userAgent := c.GetHeader("User-Agent")
+		c.Request = utils.ContextSet(c.Request, logger.XRequestID, reqId)
+		c.Request = utils.ContextSet(c.Request, logger.ReqClientIP, c.Request.RemoteAddr)
+		c.Request = utils.ContextSet(c.Request, logger.RequestMethod, c.Request.Method)
+		c.Request = utils.ContextSet(c.Request, logger.RequestURI, c.Request.RequestURI)
+		c.Request = utils.ContextSet(c.Request, userAgentKey, userAgent)
 
-		logger.Info(r.Context(), "exec begin",
+		logger.Info(c.Request.Context(), "exec begin",
 			zap.String("module", "web"), zap.String(userAgentKey.String(), userAgent),
 		)
 
-		h.ServeHTTP(w, r)
+		c.Next()
 
 		// log.Println("exec end", map[string]interface{}{
 		// 	"exec_time": time.Since(start).Seconds(),
 		// })
 
-		logger.Info(r.Context(), "exec end", map[string]interface{}{
+		logger.Info(c.Request.Context(), "exec end", map[string]interface{}{
 			"exec_time": time.Since(start).Seconds(),
 		})
-	})
+	}
 }
 
 func isBrokenPipe(ctx context.Context, err interface{}) bool {

@@ -2,15 +2,13 @@ package topics
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 
 	"github.com/daheige/go-ddd-api/internal/application"
 	"github.com/daheige/go-ddd-api/internal/domain/model"
 	"github.com/daheige/go-ddd-api/internal/infras/utils"
+	"github.com/gin-gonic/gin"
 )
 
 // TopicHandler topic handler
@@ -19,31 +17,31 @@ type TopicHandler struct {
 }
 
 // GetTopic get topic
-func (s *TopicHandler) GetTopic(w http.ResponseWriter, r *http.Request) {
-	topicID, err := strconv.Atoi(mux.Vars(r)["topic_id"])
+func (s *TopicHandler) GetTopic(c *gin.Context) {
+	topicID, err := strconv.Atoi(c.Param("topic_id"))
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
 	topic, err := s.TopicService.GetTopic(topicID)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, topic)
+	utils.JSON(c, http.StatusOK, topic)
 }
 
 // GetAllTopic get all topic
-func (s *TopicHandler) GetAllTopic(w http.ResponseWriter, r *http.Request) {
+func (s *TopicHandler) GetAllTopic(c *gin.Context) {
 	topics, err := s.TopicService.GetAllTopic()
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, topics)
+	utils.JSON(c, http.StatusOK, topics)
 }
 
 type payload struct {
@@ -52,61 +50,60 @@ type payload struct {
 }
 
 // CreateTopic create topic
-func (s *TopicHandler) CreateTopic(w http.ResponseWriter, r *http.Request) {
+func (s *TopicHandler) CreateTopic(c *gin.Context) {
 	var p payload
-	err := json.NewDecoder(r.Body).Decode(&p)
+	err := json.NewDecoder(c.Request.Body).Decode(&p)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	log.Println("p: ", p)
 	err = s.TopicService.AddTopic(p.Name, p.Slug)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusCreated, nil)
+	utils.JSON(c, http.StatusCreated, nil)
 }
 
 // RemoveTopic remove topic
-func (s *TopicHandler) RemoveTopic(w http.ResponseWriter, r *http.Request) {
-	topicID, err := strconv.Atoi(mux.Vars(r)["topic_id"])
+func (s *TopicHandler) RemoveTopic(c *gin.Context) {
+	topicID, err := strconv.Atoi(c.Param("topic_id"))
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
 	err = s.TopicService.RemoveTopic(topicID)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, nil)
+	utils.JSON(c, http.StatusOK, nil)
 }
 
 // UpdateTopic update topic
-func (s *TopicHandler) UpdateTopic(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	var p model.Topic
-	err := decoder.Decode(&p)
+func (s *TopicHandler) UpdateTopic(c *gin.Context) {
+	decoder := json.NewDecoder(c.Request.Body)
+	var topic model.Topic
+	err := decoder.Decode(&topic)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 	}
 
-	topicID, err := strconv.Atoi(mux.Vars(r)["topic_id"])
+	topicID, err := strconv.Atoi(c.Param("topic_id"))
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	err = s.TopicService.UpdateTopic(p, topicID)
+	err = s.TopicService.UpdateTopic(topic, topicID)
 	if err != nil {
-		utils.Error(w, http.StatusNotFound, err, err.Error())
+		utils.Error(c, http.StatusNotFound, err.Error())
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, nil)
+	utils.JSON(c, http.StatusOK, nil)
 }
